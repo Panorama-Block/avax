@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"  # Porta principal da aplicação para acesso local e pelo ngrok
+      - "8081:8081" 
     env_file:
       - .env.docker
     networks:
@@ -20,11 +20,12 @@ services:
     depends_on:
       - avax-extractor
     environment:
-      # Você precisará adicionar NGROK_AUTHTOKEN ao seu arquivo .env.docker
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     command: ["http", "avax-extractor:8081", "--log=stdout"]
     ports:
-      - "4040:4040"  # Porta para a UI web do Ngrok
+      - "4040:4040" 
+    env_file:
+      - .env.docker
     networks:
       - avax_dev_network
 

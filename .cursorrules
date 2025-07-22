@@ -1,0 +1,102 @@
+# Cursor Rules - Projeto Avalanche/Go
+
+## Contexto do Projeto
+Você está trabalhando em um projeto Go relacionado ao Avalanche (AVAX). Este é um projeto de blockchain que envolve:
+- Extração e processamento de dados da blockchain Avalanche
+- Dockerização da aplicação
+- Estrutura modular com `cmd/` e `internal/`
+
+## Regras de Código Go
+
+### Estrutura e Organização
+- Siga a estrutura padrão do Go: `cmd/` para executáveis, `internal/` para código interno
+- Use nomes de pacotes descritivos e em minúsculas
+- Mantenha funções públicas documentadas com comentários godoc
+- Organize imports em grupos: stdlib, external, internal
+
+### Estilo de Código
+- Use `gofmt` e `goimports` automaticamente
+- Prefira nomes curtos e descritivos para variáveis
+- Use receiver names consistentes (primeira letra do tipo)
+- Implemente interfaces pequenas e focadas
+- Prefira composição sobre herança
+
+### Error Handling
+- Sempre trate erros explicitamente
+- Use `fmt.Errorf` com wrapping quando apropriado
+- Retorne erros como último valor de retorno
+- Considere usar tipos de erro customizados para casos específicos
+
+### Blockchain/Avalanche Específico
+- Use tipos seguros para endereços e hashes
+- Implemente validação de dados blockchain
+- Considere rate limiting para chamadas RPC
+- Use context.Context para operações que podem ser canceladas
+- Implemente retry logic para chamadas de rede
+
+### Performance
+- Use benchmarks para código crítico
+- Prefira slice pooling para operações frequentes
+- Considere usar channels para processamento concorrente
+- Implemente timeouts apropriados
+
+### Docker
+- Mantenha Dockerfiles enxutos usando multi-stage builds
+- Use imagens Alpine quando possível
+- Defina health checks apropriados
+- Configure recursos limits no docker-compose
+
+### Testing
+- Escreva testes unitários para toda lógica de negócio
+- Use table-driven tests quando apropriado
+- Implemente mocks para dependências externas
+- Mantenha cobertura de testes >80%
+
+### Logging
+- Use structured logging (ex: logrus, zap)
+- Inclua context relevante nos logs
+- Use níveis de log apropriados
+- Evite logging de informações sensíveis
+
+## Regras de Resposta
+
+### Context7 - Documentação em Tempo Real
+- Para implementações complexas, use 'use context7' nos prompts
+- Especialmente útil para: bibliotecas Go, APIs blockchain, padrões atuais
+- Exemplo: "Como implementar client RPC Avalanche? use context7"
+- Context7 garante documentação sempre atualizada
+
+### Quando Sugerir Código
+- Sempre forneça código completo e executável
+- Inclua imports necessários
+- Adicione comentários explicativos
+- Sugira melhorias de performance quando relevante
+- Use Context7 para garantir APIs atuais
+
+### Quando Refatorar
+- Identifique code smells automaticamente
+- Sugira patterns Go idiomáticos
+- Proponha otimizações de performance
+- Mantenha backward compatibility quando possível
+
+### Debugging
+- Sugira técnicas de debugging específicas do Go
+- Recomende ferramentas como `go run -race`
+- Identifique possíveis race conditions
+- Sugira logging estratégico
+
+## Ferramentas Recomendadas
+- gofmt, goimports para formatação
+- golangci-lint para linting
+- go mod tidy para dependências
+- go test -race para race conditions
+- pprof para profiling de performance
+
+## Boas Práticas de Segurança
+- Valide todos os inputs externos
+- Use HTTPS para todas as conexões
+- Implemente rate limiting
+- Sanitize logs para evitar injection
+- Use secrets management apropriado
+
+Sempre priorize código limpo, testável e bem documentado. Quando em dúvida, prefira simplicidade e clareza sobre cleverness. 

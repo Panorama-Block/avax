@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-filesystem",
+        "/home/hugo/dev/projects/panoramablock/data/avax"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  },
+  "settings": {
+    "contextWindow": 200000,
+    "maxTokens": 8192,
+    "temperature": 0.1,
+    "autoContext": true,
+    "smartContextSelection": true,
+    "includeFileHistory": true,
+    "includeGitContext": true,
+    "parallelProcessing": true
+  },
+  "filePatterns": {
+    "include": [
+      "**/*.go",
+      "**/*.mod",
+      "**/*.sum", 
+      "**/Dockerfile*",
+      "**/docker-compose*.yml",
+      "**/*.md",
+      "**/*.json",
+      "**/*.yaml",
+      "**/*.yml"
+    ],
+    "exclude": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/.git/**",
+      "**/avaxd",
+      "**/avaxtractor",
+      "**/*.log",
+      "**/tmp/**",
+      "**/dist/**",
+      "**/build/**"
+    ],
+    "prioritize": [
+      "**/cmd/**/*.go",
+      "**/internal/**/*.go",
+      "go.mod",
+      "go.sum",
+      "README.md",
+      "docker-compose.yml"
+    ]
+  },
+  "contextEnhancement": {
+    "includeImports": true,
+    "followReferences": true,
+    "includeTests": true,
+    "includeDocumentation": true,
+    "trackDependencies": true,
+    "analyzeInterfaces": true
+  },
+  "blockchain": {
+    "avalancheSpecific": {
+      "trackTransactions": true,
+      "monitorContracts": true,
+      "indexBlocks": true,
+      "networkContext": "mainnet"
+    }
+  }
+} 
