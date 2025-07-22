@@ -78,5 +78,12 @@ type GasMetricsEvent struct {
 
 // CumulativeMetricsEvent is a specialized metrics event for cumulative metrics
 type CumulativeMetricsEvent struct {
+	Type    string            `json:"type"`
 	Metrics CumulativeMetrics `json:"metrics"`
+}
+
+// StakingMetricsEvent é um evento especializado para métricas de staking
+type StakingMetricsEvent struct {
+	Type    string         `json:"type"`
+	Metrics StakingMetrics `json:"metrics"`
 }

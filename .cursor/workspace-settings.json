@@ -1,0 +1,61 @@
+{
+  "cursor.ai.contextWindowSize": 200000,
+  "cursor.ai.autoCompletion": true,
+  "cursor.ai.smartRewrite": true,
+  "cursor.ai.codeGeneration": {
+    "language": "go",
+    "framework": "blockchain",
+    "style": "idiomatic",
+    "errorHandling": "explicit",
+    "testing": "table-driven"
+  },
+  "cursor.ai.contextInclusion": {
+    "includeGitHistory": true,
+    "includeDocumentation": true,
+    "includeTests": true,
+    "includeDependencies": true,
+    "maxFileSize": "5MB",
+    "smartContextSelection": true
+  },
+  "cursor.ai.suggestions": {
+    "enableInlineCompletion": true,
+    "enableChatCompletion": true,
+    "enableCodeActions": true,
+    "showOptimizationSuggestions": true,
+    "showSecuritySuggestions": true
+  },
+  "go.formatTool": "goimports",
+  "go.lintTool": "golangci-lint",
+  "go.testFlags": ["-v", "-race"],
+  "go.buildFlags": ["-race"],
+  "files.exclude": {
+    "**/avaxd": true,
+    "**/avaxtractor": true,
+    "**/vendor": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true
+  },
+  "search.exclude": {
+    "**/vendor": true,
+    "**/node_modules": true,
+    "**/avaxd": true,
+    "**/avaxtractor": true
+  },
+  "files.watcherExclude": {
+    "**/vendor/**": true,
+    "**/node_modules/**": true,
+    "**/avaxd": true,
+    "**/avaxtractor": true
+  },
+  "editor.rulers": [100],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll": true
+  },
+  "go.useLanguageServer": true,
+  "go.toolsManagement.autoUpdate": true,
+  "docker.enableScm": true,
+  "docker.showStartPage": false
+} 

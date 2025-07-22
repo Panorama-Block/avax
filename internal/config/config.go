@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -12,8 +13,8 @@ type Config struct {
     APIUrl                 string
     APIKey                 string
     ChainWsUrl             string
-    APIRateLimit           float64  // Request rate limit (requests per second)
-    APIRateBurst           int      // Maximum burst size for the rate limiter
+    APIRateLimit           float64  
+    APIRateBurst           int      
     KafkaBroker            string
     KafkaTopicChains       string
     KafkaTopicBlocks       string
@@ -39,6 +40,7 @@ type Config struct {
 
     WebhookPort    string
     WebSocketPort  string
+
     Workers        int
     TokenAddresses []string
 
@@ -53,6 +55,20 @@ type Config struct {
     AvaCloudAPIBaseURL  string
     WebhookURL          string
     WebhookSecret       string
+    
+    // Custom intervals (parsed de env como duration string, ex: "10m", "120s")
+    ActivityMetricsInterval    time.Duration
+    PerformanceMetricsInterval time.Duration
+    GasMetricsInterval         time.Duration
+    CumulativeMetricsInterval  time.Duration
+    BlockServiceInterval       time.Duration
+    StakingMetricsInterval     time.Duration
+
+    // Feature toggles
+    EnablePerformanceMetrics bool
+    EnableCumulativeMetrics  bool
+    EnableBlockService       bool
+    EnableStakingMetrics bool
 }
 
 func LoadConfig() *Config {
@@ -69,12 +85,12 @@ func LoadConfig() *Config {
     // Parse API rate limit settings with defaults
     apiRateLimit, err := strconv.ParseFloat(os.Getenv("API_RATE_LIMIT"), 64)
     if err != nil || apiRateLimit <= 0 {
-        apiRateLimit = 5.0 // Default: 5 requests per second
+        apiRateLimit = 5.0 
     }
 
     apiRateBurst, err := strconv.Atoi(os.Getenv("API_RATE_BURST"))
     if err != nil || apiRateBurst <= 0 {
-        apiRateBurst = 10 // Default: burst of 10 requests
+        apiRateBurst = 10 
     }
 
     tokenAddressesEnv := os.Getenv("TOKEN_ADDRESSES")
@@ -83,13 +99,11 @@ func LoadConfig() *Config {
         tokenAddresses = append(tokenAddresses, tokenAddressesEnv)
     }
 
-    // Get default metrics topic as fallback for specific metrics topics
     defaultMetricsTopic := os.Getenv("KAFKA_TOPIC_METRICS")
     if defaultMetricsTopic == "" {
         log.Fatalf("ERRO: KAFKA_TOPIC_METRICS não pode estar vazio!")
     }
     
-    // Try to get specific metrics topics or fall back to the default metrics topic
     activityMetricsTopic := os.Getenv("KAFKA_TOPIC_ACTIVITY_METRICS")
     if activityMetricsTopic == "" {
         activityMetricsTopic = defaultMetricsTopic
@@ -110,19 +124,49 @@ func LoadConfig() *Config {
         cumulativeMetricsTopic = defaultMetricsTopic
     }
 
-    // Parse the EnableRealtime setting
     enableRealtimeStr := os.Getenv("ENABLE_REALTIME")
     enableRealtime := false
     if enableRealtimeStr == "true" || enableRealtimeStr == "1" || enableRealtimeStr == "yes" {
         enableRealtime = true
     }
 
-    // Parse the CreateCChainWebhook setting
     createCChainWebhookStr := os.Getenv("CREATE_C_CHAIN_WEBHOOK")
     createCChainWebhook := false
     if createCChainWebhookStr == "true" || createCChainWebhookStr == "1" || createCChainWebhookStr == "yes" {
         createCChainWebhook = true
     }
+
+    // Helper para parsear duration com valor padrão
+    parseDuration := func(envVar string, def string) time.Duration {
+        if v := os.Getenv(envVar); v != "" {
+            if d, err := time.ParseDuration(v); err == nil {
+                return d
+            }
+        }
+        d, _ := time.ParseDuration(def)
+        return d
+    }
+
+    // Helper para parsear booleano
+    parseBool := func(envVar string, def bool) bool {
+        v := os.Getenv(envVar)
+        if v == "" {
+            return def
+        }
+        return v == "true" || v == "1" || v == "yes"
+    }
+
+    activityInterval := parseDuration("ACTIVITY_METRICS_INTERVAL", "15m")
+    performanceInterval := parseDuration("PERFORMANCE_METRICS_INTERVAL", "10m")
+    gasInterval := parseDuration("GAS_METRICS_INTERVAL", "15m")
+    cumulativeInterval := parseDuration("CUMULATIVE_METRICS_INTERVAL", "30m")
+    blockSvcInterval := parseDuration("BLOCK_SERVICE_INTERVAL", "120s")
+    stakingInterval := parseDuration("STAKING_METRICS_INTERVAL", "30m")
+
+    enablePerformance := parseBool("ENABLE_PERFORMANCE_METRICS", true)
+    enableCumulative := parseBool("ENABLE_CUMULATIVE_METRICS", false)
+    enableBlockSvc := parseBool("ENABLE_BLOCK_SERVICE", true)
+    enableStaking := parseBool("ENABLE_STAKING_METRICS", false)
 
     return &Config{
         APIUrl:                 os.Getenv("API_URL"),
@@ -166,5 +210,17 @@ func LoadConfig() *Config {
         AvaCloudAPIBaseURL: os.Getenv("AVACLOUD_API_BASE_URL"),
         WebhookURL:         os.Getenv("WEBHOOK_URL"),
         WebhookSecret:      os.Getenv("WEBHOOK_SECRET"),
+        
+        // Intervals & toggles
+        ActivityMetricsInterval:    activityInterval,
+        PerformanceMetricsInterval: performanceInterval,
+        GasMetricsInterval:         gasInterval,
+        CumulativeMetricsInterval:  cumulativeInterval,
+        BlockServiceInterval:       blockSvcInterval,
+        StakingMetricsInterval:     stakingInterval,
+        EnablePerformanceMetrics:   enablePerformance,
+        EnableCumulativeMetrics:    enableCumulative,
+        EnableBlockService:         enableBlockSvc,
+        EnableStakingMetrics:       enableStaking,
     }
 }

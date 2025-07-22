@@ -57,6 +57,8 @@ const (
 	EventPerformanceMetricsUpdated = "metrics.performance.updated"
 	EventGasMetricsUpdated        = "metrics.gas.updated"
 	EventCumulativeMetricsUpdated = "metrics.cumulative.updated"
+	// Staking metrics
+	EventStakingMetricsUpdated = "metrics.staking.updated"
 )
 
 // Event represents a generic event in the system

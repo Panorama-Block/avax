@@ -14,15 +14,12 @@ import (
 func main() {
 	// Configure log format
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("Initializing application...")
-	
+	log.Println("Initializing application...")	
 	// Load application configuration
-	log.Println("Loading configuration...")
 	cfg := config.LoadConfig()
-	log.Printf("Configuration loaded: Webhook Port=%s, URL=%s", cfg.WebhookPort, cfg.WebhookURL)
+	log.Printf("Configuration loaded: %+v", cfg)
 
 	// Create and configure the application
-	log.Println("Creating application...")
 	application := app.NewApp(cfg)
 	
 	log.Println("Setting up services...")
@@ -38,9 +35,8 @@ func main() {
 	
 	log.Println("===========================================")
 	log.Println("Application running. Press Ctrl+C to exit.")
-	log.Printf("Webhook listening on port: %s", cfg.WebhookPort)
-	log.Printf("Webhook URL: %s", cfg.WebhookURL)
 	log.Println("===========================================")
+
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)

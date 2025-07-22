@@ -220,63 +220,124 @@ func (a *App) SetupServices() error {
 	}
 
 	// Add core services
+	// Chain service (usar intervalo padrão ou configurado)
+	chainInterval := 30 * time.Second
+	if a.config.BlockServiceInterval > 0 {
+		// reusar mesmo campo por simplicidade (ou criar específico)
+		chainInterval = a.config.BlockServiceInterval
+	}
 	chainService := chain.NewService(
 		a.api,
 		a.eventManager,
-		service.WithPollInterval(30*time.Second),
+		service.WithPollInterval(chainInterval),
 		service.WithWorkerCount(1),
 	)
 	a.services = append(a.services, chainService)
-	log.Printf("Chain service created and added to services list")
 
-	blockService := block.NewService(
-		a.api,
-		a.eventManager,
-		service.WithPollInterval(15*time.Second),
-		service.WithWorkerCount(5),
-	)
-	blockService.SetChains([]string{"43114"}) // Avalanche C-Chain
-	a.services = append(a.services, blockService)
+	// Block service pode ser desativado ou ter intervalo customizado
+	if a.config.EnableBlockService {
+		bsInterval := a.config.BlockServiceInterval
+		if bsInterval == 0 {
+			bsInterval = 120 * time.Second
+		}
+		blockService := block.NewService(
+			a.api,
+			a.eventManager,
+			service.WithPollInterval(bsInterval),
+			service.WithWorkerCount(2),
+		)
+		blockService.SetChains([]string{"43114"})
+		a.services = append(a.services, blockService)
+	} else {
+		log.Println("BlockService desabilitado por configuração")
+	}
 
-	// Add metrics services
+	// Add metrics services com intervalos customizados
+
+	// Activity
+	actInterval := a.config.ActivityMetricsInterval
+	if actInterval == 0 {
+		actInterval = 15 * time.Minute
+	}
 	activityMetricsService := metrics.NewActivityService(
 		a.api,
 		a.eventManager,
-		5*time.Minute,  // Collection interval
-		30*time.Minute, // Lookback period
-		service.WithWorkerCount(2),
+		actInterval,
+		2*actInterval, // lookback = 2x interval
+		service.WithWorkerCount(1),
 	)
-	activityMetricsService.SetChains([]string{"43114"}) // Avalanche C-Chain
+	activityMetricsService.SetChains([]string{"43114"})
 	a.services = append(a.services, activityMetricsService)
 
-	performanceMetricsService := metrics.NewPerformanceService(
-		a.api,
-		a.eventManager,
-		1*time.Minute,  // Collection interval (more frequent for real-time performance monitoring)
-		15*time.Minute, // Lookback period
-		service.WithWorkerCount(2),
-	)
-	performanceMetricsService.SetChains([]string{"43114"}) // Avalanche C-Chain
-	a.services = append(a.services, performanceMetricsService)
+	// Performance (opcional)
+	if a.config.EnablePerformanceMetrics {
+		perfInterval := a.config.PerformanceMetricsInterval
+		if perfInterval == 0 {
+			perfInterval = 10 * time.Minute
+		}
+		performanceMetricsService := metrics.NewPerformanceService(
+			a.api,
+			a.eventManager,
+			perfInterval,
+			perfInterval*3/2,
+			service.WithWorkerCount(1),
+		)
+		performanceMetricsService.SetChains([]string{"43114"})
+		a.services = append(a.services, performanceMetricsService)
+	} else {
+		log.Println("PerformanceMetricsService desabilitado por configuração")
+	}
 
+	// Gas
+	gasInterval := a.config.GasMetricsInterval
+	if gasInterval == 0 {
+		gasInterval = 15 * time.Minute
+	}
 	gasMetricsService := metrics.NewGasService(
 		a.api,
 		a.eventManager,
-		5*time.Minute,  // Collection interval
-		30*time.Minute, // Lookback period
-		service.WithWorkerCount(2),
-	)
-	gasMetricsService.SetChains([]string{"43114"}) // Avalanche C-Chain
-	a.services = append(a.services, gasMetricsService)
-
-	cumulativeMetricsService := metrics.NewCumulativeService(
-		a.api,
-		a.eventManager,
-		15*time.Minute, // Collection interval (less frequent as it doesn't change as rapidly)
+		gasInterval,
+		2*gasInterval,
 		service.WithWorkerCount(1),
 	)
-	cumulativeMetricsService.SetChains([]string{"43114"}) // Avalanche C-Chain
-	a.services = append(a.services, cumulativeMetricsService)
+	gasMetricsService.SetChains([]string{"43114"})
+	a.services = append(a.services, gasMetricsService)
+
+	// Cumulative (opcional)
+	if a.config.EnableCumulativeMetrics {
+		cumInterval := a.config.CumulativeMetricsInterval
+		if cumInterval == 0 {
+			cumInterval = 30 * time.Minute
+		}
+		cumulativeMetricsService := metrics.NewCumulativeService(
+			a.api,
+			a.eventManager,
+			cumInterval,
+			service.WithWorkerCount(1),
+		)
+		cumulativeMetricsService.SetChains([]string{"43114"})
+		a.services = append(a.services, cumulativeMetricsService)
+	} else {
+		log.Println("CumulativeMetricsService desabilitado por configuração")
+	}
+
+	// Staking metrics (opcional)
+	if a.config.EnableStakingMetrics {
+		stakeInterval := a.config.StakingMetricsInterval
+		if stakeInterval == 0 {
+			stakeInterval = 30 * time.Minute
+		}
+		stakingMetricsService := metrics.NewStakingService(
+			a.api,
+			a.eventManager,
+			stakeInterval,
+			service.WithWorkerCount(1),
+		)
+		stakingMetricsService.SetChains([]string{"43114"})
+		a.services = append(a.services, stakingMetricsService)
+	} else {
+		log.Println("StakingMetricsService desabilitado por configuração")
+	}
 
 	return nil
 }
@@ -317,6 +378,7 @@ func (a *App) setupTopicMappings() {
 	a.kafkaProducer.RegisterTopicMapping(types.EventPerformanceMetricsUpdated, a.config.KafkaTopicPerformanceMetrics)
 	a.kafkaProducer.RegisterTopicMapping(types.EventGasMetricsUpdated, a.config.KafkaTopicGasMetrics)
 	a.kafkaProducer.RegisterTopicMapping(types.EventCumulativeMetricsUpdated, a.config.KafkaTopicCumulativeMetrics)
+	a.kafkaProducer.RegisterTopicMapping(types.EventStakingMetricsUpdated, a.config.KafkaTopicMetrics)
 }
 
 // Start starts the application
